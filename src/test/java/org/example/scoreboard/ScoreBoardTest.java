@@ -19,6 +19,49 @@ class ScoreBoardTest {
     }
 
     @Nested
+    @DisplayName("updateScore")
+    class UpdateScore {
+
+        @Test
+        @DisplayName("should update the score of an ongoing match")
+        void shouldUpdateScoreOfAnOngoingMatch() {
+            scoreBoard.startGame("Spain", "Brazil");
+
+            scoreBoard.updateScore("Spain", "Brazil", 10, 2);
+
+            Match match = scoreBoard.getSummary().get(0);
+            assertThat(match.homeScore()).isEqualTo(10);
+            assertThat(match.awayScore()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("should throw when updating a match not on the board")
+        void shouldThrowWhenUpdatingMatchNotOnTheBoard() {
+            assertThatThrownBy(() -> scoreBoard.updateScore("Spain", "Brazil", 1, 0))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("not on the board");
+        }
+
+        @Test
+        @DisplayName("should reject negative scores")
+        void shouldRejectNegativeScores() {
+            scoreBoard.startGame("Spain", "Brazil");
+
+            assertThatThrownBy(() -> scoreBoard.updateScore("Spain", "Brazil", -1, 0))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("should reject null or blank team names")
+        void shouldRejectNullOrBlankTeamNames() {
+            assertThatThrownBy(() -> scoreBoard.updateScore(null, "Brazil", 1, 0))
+                    .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> scoreBoard.updateScore("Spain", " ", 1, 0))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Nested
     @DisplayName("startGame")
     class StartGame {
 

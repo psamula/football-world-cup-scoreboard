@@ -17,8 +17,30 @@ public class ScoreBoard {
         matchByKey.put(keyOf(match), match);
     }
 
+    public void updateScore(String homeTeam, String awayTeam, int homeScore, int awayScore) {
+        Match currentMatch = findOnScoreBoard(homeTeam, awayTeam);
+        matchByKey.put(keyOf(currentMatch), currentMatch.withScore(homeScore, awayScore));
+    }
+
     public List<Match> getSummary() {
         return List.copyOf(matchByKey.values());
+    }
+
+    private Match findOnScoreBoard(String homeTeam, String awayTeam) {
+        requireTeamName(homeTeam, "home team");
+        requireTeamName(awayTeam, "away team");
+        Match currentMatch = matchByKey.get(MatchKey.of(homeTeam, awayTeam));
+        if (currentMatch == null) {
+            throw new IllegalStateException(
+                    "Match between " + homeTeam + " and " + awayTeam + " is not on the board");
+        }
+        return currentMatch;
+    }
+
+    private static void requireTeamName(String value, String label) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(label + " must not be blank");
+        }
     }
 
     private void requireNotAlreadyOnBoard(Match match) {
