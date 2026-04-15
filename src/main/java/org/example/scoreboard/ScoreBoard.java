@@ -1,5 +1,8 @@
 package org.example.scoreboard;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +31,9 @@ public class ScoreBoard {
     }
 
     public List<Match> getSummary() {
-        return List.copyOf(matchByKey.values());
+        return getMatchesMostRecentFirst().stream()
+                .sorted(byTotalScoreDescending())
+                .toList();
     }
 
     private Match findOnScoreBoard(String homeTeam, String awayTeam) {
@@ -73,6 +78,16 @@ public class ScoreBoard {
                 .flatMap(match -> Stream.of(match.homeTeam(), match.awayTeam()))
                 .map(ScoreBoard::normalize)
                 .anyMatch(normalizedTeam::equals);
+    }
+
+    private List<Match> getMatchesMostRecentFirst() {
+        List<Match> matches = new ArrayList<>(matchByKey.values());
+        Collections.reverse(matches);
+        return matches;
+    }
+
+    private static Comparator<Match> byTotalScoreDescending() {
+        return Comparator.comparingInt(Match::totalScore).reversed();
     }
 
     private static MatchKey keyOf(Match match) {

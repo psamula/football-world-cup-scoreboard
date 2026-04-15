@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -16,6 +18,67 @@ class ScoreBoardTest {
     @BeforeEach
     void setUp() {
         scoreBoard = new ScoreBoard();
+    }
+
+    @Nested
+    @DisplayName("getSummary")
+    class Summary {
+
+        @Test
+        @DisplayName("should return empty list when no games on the board")
+        void shouldReturnEmptyListWhenNoGamesOnTheBoard() {
+            assertThat(scoreBoard.getSummary()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("should order by total score descending, then by most recently added")
+        void shouldOrderByTotalScoreDescendingThenByMostRecentlyAdded() {
+            scoreBoard.startGame("Mexico", "Canada");
+            scoreBoard.updateScore("Mexico", "Canada", 0, 5);
+
+            scoreBoard.startGame("Spain", "Brazil");
+            scoreBoard.updateScore("Spain", "Brazil", 10, 2);
+
+            scoreBoard.startGame("Germany", "France");
+            scoreBoard.updateScore("Germany", "France", 2, 2);
+
+            scoreBoard.startGame("Uruguay", "Italy");
+            scoreBoard.updateScore("Uruguay", "Italy", 6, 6);
+
+            scoreBoard.startGame("Argentina", "Australia");
+            scoreBoard.updateScore("Argentina", "Australia", 3, 1);
+
+            assertThat(scoreBoard.getSummary())
+                    .extracting(Match::toString)
+                    .containsExactly(
+                            "Uruguay 6 - Italy 6",
+                            "Spain 10 - Brazil 2",
+                            "Mexico 0 - Canada 5",
+                            "Argentina 3 - Australia 1",
+                            "Germany 2 - France 2"
+                    );
+        }
+
+        @Test
+        @DisplayName("should return a stable snapshot not affected by later changes")
+        void shouldReturnStableSnapshotNotAffectedByLaterChanges() {
+            scoreBoard.startGame("Mexico", "Canada");
+            List<Match> snapshot = scoreBoard.getSummary();
+
+            scoreBoard.startGame("Spain", "Brazil");
+
+            assertThat(snapshot).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("should return an unmodifiable list")
+        void shouldReturnUnmodifiableList() {
+            scoreBoard.startGame("Mexico", "Canada");
+            List<Match> summary = scoreBoard.getSummary();
+
+            assertThatThrownBy(() -> summary.add(Match.start("Spain", "Brazil")))
+                    .isInstanceOf(UnsupportedOperationException.class);
+        }
     }
 
     @Nested
