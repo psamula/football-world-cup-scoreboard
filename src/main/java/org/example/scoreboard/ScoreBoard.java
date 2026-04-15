@@ -22,6 +22,11 @@ public class ScoreBoard {
         matchByKey.put(keyOf(currentMatch), currentMatch.withScore(homeScore, awayScore));
     }
 
+    public void finishGame(String homeTeam, String awayTeam) {
+        Match match = findOnScoreBoard(homeTeam, awayTeam);
+        matchByKey.remove(keyOf(match));
+    }
+
     public List<Match> getSummary() {
         return List.copyOf(matchByKey.values());
     }

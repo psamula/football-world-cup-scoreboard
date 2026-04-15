@@ -19,6 +19,50 @@ class ScoreBoardTest {
     }
 
     @Nested
+    @DisplayName("finishGame")
+    class FinishGame {
+
+        @Test
+        @DisplayName("should remove the match from the board")
+        void shouldRemoveMatchFromTheBoard() {
+            scoreBoard.startGame("Mexico", "Canada");
+            scoreBoard.startGame("Spain", "Brazil");
+
+            scoreBoard.finishGame("Mexico", "Canada");
+
+            assertThat(scoreBoard.getSummary()).hasSize(1);
+            assertThat(scoreBoard.getSummary().get(0).homeTeam()).isEqualTo("Spain");
+        }
+
+        @Test
+        @DisplayName("should throw when finishing a match not on the board")
+        void shouldThrowWhenFinishingMatchNotOnTheBoard() {
+            assertThatThrownBy(() -> scoreBoard.finishGame("Spain", "Brazil"))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("not on the board");
+        }
+
+        @Test
+        @DisplayName("should allow teams to be reused after finishing")
+        void shouldAllowTeamsToBeReusedAfterFinishing() {
+            scoreBoard.startGame("Mexico", "Canada");
+            scoreBoard.finishGame("Mexico", "Canada");
+
+            scoreBoard.startGame("Mexico", "Brazil");
+            assertThat(scoreBoard.getSummary()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("should reject null or blank team names")
+        void shouldRejectNullOrBlankTeamNames() {
+            assertThatThrownBy(() -> scoreBoard.finishGame(null, "Brazil"))
+                    .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> scoreBoard.finishGame("Spain", " "))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Nested
     @DisplayName("updateScore")
     class UpdateScore {
 
